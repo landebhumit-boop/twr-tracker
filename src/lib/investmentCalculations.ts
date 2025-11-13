@@ -18,7 +18,8 @@ export interface PerformanceRecord {
 
 export interface AccountSummary {
   accountNumber: string;
-  isActive: boolean;
+  status: 'active' | 'closed' | 'held-away';
+  hasFees: boolean;
   currentMarketValue: number;
   inceptionDate: string;
   latestDate: string;
@@ -94,7 +95,23 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
     const inceptionRecord = accountRecords.find(r => r.beginningMarketValue > 0) || accountRecords[0];
     const latestRecord = accountRecords[accountRecords.length - 1];
     
-    const isActive = latestRecord.endingMarketValue > 0;
+    // Determine account status
+    const transitionDate = new Date('2023-03-31');
+    const latestDate = new Date(latestRecord.endDate);
+    let status: 'active' | 'closed' | 'held-away';
+    
+    if (latestRecord.endingMarketValue === 0) {
+      status = 'closed';
+    } else if (latestDate.getTime() === transitionDate.getTime()) {
+      status = 'active';
+    } else {
+      status = 'held-away';
+    }
+    
+    // Check if account has fees (net IRR != gross IRR)
+    const hasFees = accountRecords.some(r => 
+      !isNaN(r.netIRR) && !isNaN(r.grossIRR) && r.netIRR !== r.grossIRR
+    );
     
     // Calculate cumulative TWR (compound the returns)
     let cumulativeTWR = 1;
@@ -119,7 +136,8 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
     
     summaries.push({
       accountNumber,
-      isActive,
+      status,
+      hasFees,
       currentMarketValue: latestRecord.endingMarketValue,
       inceptionDate: inceptionRecord.startDate,
       latestDate: latestRecord.endDate,
@@ -140,29 +158,36 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
 
 export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] {
   const yearlyMap = new Map<number, { 
-    marketValueChange: number; 
-    netFlows: number;
+    beginningValue: number;
     endingValue: number;
+    netFlows: number;
     twrProduct: number;
   }>();
   
-  records.forEach(record => {
+  // Sort records by date first
+  const sortedRecords = [...records].sort((a, b) => 
+    new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+  );
+  
+  sortedRecords.forEach(record => {
     const year = new Date(record.endDate).getFullYear();
     
     if (!yearlyMap.has(year)) {
       yearlyMap.set(year, { 
-        marketValueChange: 0, 
+        beginningValue: record.beginningMarketValue,
+        endingValue: record.endingMarketValue,
         netFlows: 0,
-        endingValue: 0,
         twrProduct: 1
       });
     }
     
     const yearData = yearlyMap.get(year)!;
-    yearData.marketValueChange += (record.endingMarketValue - record.beginningMarketValue);
-    yearData.netFlows += (record.inflows - record.outflows);
+    // Update ending value to the latest in the year
     yearData.endingValue = record.endingMarketValue;
+    // Accumulate net flows
+    yearData.netFlows += (record.inflows - record.outflows);
     
+    // Compound TWR
     if (record.netTWR) {
       yearData.twrProduct *= (1 + record.netTWR);
     }
@@ -175,9 +200,13 @@ export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] 
     const data = yearlyMap.get(year)!;
     growthOf1 *= data.twrProduct;
     
+    // Market value change = (ending - beginning) - net flows
+    // This gives us the investment gain/loss excluding contributions/withdrawals
+    const marketValueChange = (data.endingValue - data.beginningValue) - data.netFlows;
+    
     yearlyData.push({
       year,
-      marketValueChange: data.marketValueChange - data.netFlows,
+      marketValueChange,
       netFlows: data.netFlows,
       growthOf1,
       endingValue: data.endingValue,
@@ -205,8 +234,8 @@ export function analyzeDataQuality(records: PerformanceRecord[]) {
   const accounts = new Set(records.map(r => r.accountNumber));
   const accountSummaries = calculateAccountSummary(records);
   
-  const activeAccounts = accountSummaries.filter(a => a.isActive).length;
-  const closedAccounts = accountSummaries.filter(a => !a.isActive).length;
+  const activeAccounts = accountSummaries.filter(a => a.status === 'active').length;
+  const closedAccounts = accountSummaries.filter(a => a.status === 'closed').length;
   
   const historyLengths = accountSummaries.map(a => a.yearsOfHistory);
   const avgHistory = historyLengths.reduce((sum, h) => sum + h, 0) / historyLengths.length;

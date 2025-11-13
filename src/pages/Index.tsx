@@ -8,6 +8,7 @@ import { MarketValueChart } from "@/components/MarketValueChart";
 import { PerformanceTable } from "@/components/PerformanceTable";
 import { TradeActivityCard } from "@/components/TradeActivityCard";
 import { AnalysisSection } from "@/components/AnalysisSection";
+import { AccountPerformanceOverview } from "@/components/AccountPerformanceOverview";
 import { DollarSign, TrendingUp, Calendar } from "lucide-react";
 import { 
   parseCSVData, 
@@ -59,7 +60,8 @@ const Index = () => {
   const currentSummary = selectedAccount === "all"
     ? {
         accountNumber: "All Accounts",
-        isActive: true,
+        status: 'active' as const,
+        hasFees: accountSummaries.some(a => a.hasFees),
         currentMarketValue: accountSummaries.reduce((sum, a) => sum + a.currentMarketValue, 0),
         cumulativeTWR: accountSummaries.reduce((sum, a) => sum + a.cumulativeTWR, 0) / accountSummaries.length,
         annualizedTWR: accountSummaries.reduce((sum, a) => sum + a.annualizedTWR, 0) / accountSummaries.length,
@@ -112,8 +114,8 @@ const Index = () => {
                   <SelectItem key={account.accountNumber} value={account.accountNumber}>
                     <div className="flex items-center gap-2">
                       {account.accountNumber}
-                      <Badge variant={account.isActive ? "default" : "secondary"} className="ml-2">
-                        {account.isActive ? "Active" : "Closed"}
+                      <Badge variant={account.status === 'active' ? "default" : "secondary"} className="ml-2">
+                        {account.status === 'active' ? 'Active' : account.status === 'closed' ? 'Closed' : 'Held Away'}
                       </Badge>
                     </div>
                   </SelectItem>
@@ -131,8 +133,8 @@ const Index = () => {
                 {selectedAccount === "all" ? "Portfolio Overview" : `Account ${currentSummary.accountNumber}`}
               </h2>
               {selectedAccount !== "all" && (
-                <Badge variant={currentSummary.isActive ? "default" : "secondary"}>
-                  {currentSummary.isActive ? "Active" : "Closed"}
+                <Badge variant={currentSummary.status === 'active' ? "default" : "secondary"}>
+                  {currentSummary.status === 'active' ? 'Active' : currentSummary.status === 'closed' ? 'Closed' : 'Held Away'}
                 </Badge>
               )}
             </div>
@@ -169,14 +171,14 @@ const Index = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="details">Account Details</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="analysis">Analysis</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            <AccountPerformanceOverview accounts={accountSummaries} />
             {latestActivity && (
               <TradeActivityCard
                 period={latestActivity.period}
@@ -186,16 +188,6 @@ const Index = () => {
                 dividends={latestActivity.dividends}
               />
             )}
-            <GrowthChart data={yearlyData} />
-            <MarketValueChart data={yearlyData} />
-          </TabsContent>
-
-          <TabsContent value="details" className="space-y-6">
-            <PerformanceTable
-              data={yearlyData}
-              title="Yearly Performance Summary"
-              description="Detailed breakdown of investment performance by year"
-            />
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">
@@ -203,6 +195,11 @@ const Index = () => {
               <GrowthChart data={yearlyData} />
               <MarketValueChart data={yearlyData} />
             </div>
+            <PerformanceTable
+              data={yearlyData}
+              title="Yearly Performance Summary"
+              description="Detailed breakdown of investment performance by year"
+            />
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-6">
