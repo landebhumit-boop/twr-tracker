@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { YearlyData } from "@/lib/investmentCalculations";
 
 interface PerformanceTableProps {
@@ -30,17 +31,60 @@ export function PerformanceTable({ data, title, description }: PerformanceTableP
               <TableRow key={row.year}>
                 <TableCell className="font-medium">{row.year}</TableCell>
                 <TableCell className="text-right font-mono">
-                  ${row.growthOf1.toFixed(4)}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                          ${row.growthOf1.toFixed(4)}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <div className="text-xs space-y-1">
+                          <div className="font-semibold">Growth of $1:</div>
+                          <div>Value of a $1 investment compounded through the year</div>
+                          <div className="text-muted-foreground">Ending value: ${row.endingValue.toFixed(2)}</div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </TableCell>
                 <TableCell className={`text-right font-mono ${
                   row.marketValueChange >= 0 ? 'text-success' : 'text-destructive'
                 }`}>
-                  ${row.marketValueChange.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                          ${row.marketValueChange.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <div className="text-xs space-y-1">
+                          <div className="font-semibold">Market Value Change:</div>
+                          <div>Year-end MV - Year-start MV</div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </TableCell>
                 <TableCell className={`text-right font-mono ${
                   row.netFlows >= 0 ? 'text-success' : 'text-destructive'
                 }`}>
-                  ${row.netFlows.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                          ${row.netFlows.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <div className="text-xs space-y-1">
+                          <div className="font-semibold">Net Flows:</div>
+                          <div>Inflows - Outflows for the year</div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </TableCell>
               </TableRow>
             ))}

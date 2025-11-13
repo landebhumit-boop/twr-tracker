@@ -90,8 +90,14 @@ const Index = () => {
     : "";
 
   const yearsOfHistory = currentSummary
-    ? ((new Date(currentSummary.latestDate).getTime() - new Date(currentSummary.inceptionDate).getTime()) / (1000 * 60 * 60 * 24 * 365.25)).toFixed(1)
+    ? ((new Date(currentSummary.latestDate).getTime() - new Date(currentSummary.inceptionDate).getTime()) / (1000 * 60 * 60 * 24 * 365)).toFixed(1)
     : "0";
+
+  // Calculation details available only for single-account view
+  const calc = selectedAccount !== "all" && (currentSummary as AccountSummary | undefined) &&
+    (currentSummary as AccountSummary).calculationDetails
+      ? (currentSummary as AccountSummary).calculationDetails
+      : undefined;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -154,6 +160,13 @@ const Index = () => {
               title="Current Market Value"
               value={`$${currentSummary.currentMarketValue.toLocaleString()}`}
               icon={DollarSign}
+              auditContent={calc ? (
+                <>
+                  <div className="font-semibold">Market Value Calculation:</div>
+                  <div>Latest Ending MV: ${calc.latestMV.toLocaleString()}</div>
+                  <div className="text-muted-foreground">From period ending {currentSummary.latestDate}</div>
+                </>
+              ) : undefined}
             />
             <MetricCard
               title="Cumulative TWR"
@@ -161,6 +174,14 @@ const Index = () => {
               subtitle="Since inception"
               icon={TrendingUp}
               trend="up"
+              auditContent={calc ? (
+                <>
+                  <div className="font-semibold">Cumulative TWR Calculation:</div>
+                  <div>{calc.cumulativeTWRFormula}</div>
+                  <div className="text-muted-foreground mt-1">Period: {currentSummary.inceptionDate} to {currentSummary.latestDate}</div>
+                  <div className="text-muted-foreground">{(currentSummary as AccountSummary).totalRecords} periods</div>
+                </>
+              ) : undefined}
             />
             <MetricCard
               title="Annualized TWR"
@@ -168,6 +189,14 @@ const Index = () => {
               subtitle="Annual rate"
               icon={Calendar}
               trend="up"
+              auditContent={calc ? (
+                <>
+                  <div className="font-semibold">Annualized TWR Calculation:</div>
+                  <div className="font-mono">{calc.annualizedTWRFormula}</div>
+                  <div className="text-muted-foreground mt-1">Days: {calc.daysOfHistory} ({(calc.daysOfHistory / 365).toFixed(2)} years using 365-day year)</div>
+                  <div className="text-muted-foreground">Cumulative TWR: {currentSummary.cumulativeTWR.toFixed(2)}%</div>
+                </>
+              ) : undefined}
             />
           </div>
         )}
