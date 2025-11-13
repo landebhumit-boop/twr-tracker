@@ -9,6 +9,8 @@ import { PerformanceTable } from "@/components/PerformanceTable";
 import { TradeActivityCard } from "@/components/TradeActivityCard";
 import { AnalysisSection } from "@/components/AnalysisSection";
 import { AccountPerformanceOverview } from "@/components/AccountPerformanceOverview";
+import { UnrealizedGainsPlaceholder } from "@/components/UnrealizedGainsPlaceholder";
+import { AssetAllocationPlaceholder } from "@/components/AssetAllocationPlaceholder";
 import { DollarSign, TrendingUp, Calendar } from "lucide-react";
 import { 
   parseCSVData, 
@@ -179,6 +181,9 @@ const Index = () => {
 
           <TabsContent value="overview" className="space-y-6">
             <AccountPerformanceOverview accounts={accountSummaries} />
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-6">
             {latestActivity && (
               <TradeActivityCard
                 period={latestActivity.period}
@@ -188,9 +193,6 @@ const Index = () => {
                 dividends={latestActivity.dividends}
               />
             )}
-          </TabsContent>
-
-          <TabsContent value="performance" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <GrowthChart data={yearlyData} />
               <MarketValueChart data={yearlyData} />
@@ -200,6 +202,8 @@ const Index = () => {
               title="Yearly Performance Summary"
               description="Detailed breakdown of investment performance by year"
             />
+            <UnrealizedGainsPlaceholder />
+            <AssetAllocationPlaceholder />
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-6">
