@@ -52,6 +52,7 @@ export interface YearlyData {
   growthOf1: number; // cumulative growth of $1 from inception
   portfolioValue: number; // ending MV for the year
   dollarGainLoss: number; // (mvEnd - mvStart) - netFlows
+  marketValueChange: number; // mvEnd - mvStart (for chart)
 }
 
 export function parseCSVData(csvText: string): PerformanceRecord[] {
@@ -141,11 +142,11 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
     });
     const cumulativeTWR = (cumulativeTWRFactor - 1) * 100; // Convert to percentage
     
-    // Calculate annualized TWR using actual days / 365
+    // Calculate annualized TWR using exact days / 365
     const firstDate = new Date(inceptionRecord.endDate);
     const lastDate = new Date(latestRecord.endDate);
-    const daysOfHistory = Math.floor((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
-    const years = daysOfHistory / 365.0;
+    const daysOfHistory = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
+    const years = daysOfHistory / 365;
     const annualizedTWR = years > 0 ? (Math.pow(1 + cumulativeTWR / 100, 1 / years) - 1) * 100 : cumulativeTWR;
     
     // Sum up flows and income
@@ -235,11 +236,12 @@ export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] 
     // Portfolio Value: Ending MV of last row in year
     const portfolioValue = data.lastRecord.endingMarketValue;
     
-    // Dollar Gain/Loss: (mvEnd - mvStart) - netFlows
+    // Market Value Change and Dollar Gain/Loss
     const mvStart = data.firstRecord.beginningMarketValue;
     const mvEnd = data.lastRecord.endingMarketValue;
+    const marketValueChange = mvEnd - mvStart; // For chart
     const netFlows = data.monthlyRecords.reduce((sum, r) => sum + (r.inflows - r.outflows), 0);
-    const dollarGainLoss = (mvEnd - mvStart) - netFlows;
+    const dollarGainLoss = marketValueChange - netFlows; // Performance dollars
     
     yearlyData.push({
       year,
@@ -247,6 +249,7 @@ export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] 
       growthOf1,
       portfolioValue,
       dollarGainLoss,
+      marketValueChange,
     });
   });
   
