@@ -125,21 +125,31 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
       !isNaN(r.netIRR) && !isNaN(r.grossIRR) && r.netIRR !== r.grossIRR
     );
     
-    // Calculate cumulative TWR (compound the returns)
-    let cumulativeTWR = 1;
+    // Calculate monthly TWR using flow-adjusted formula:
+    // monthlyTWR = (endingMV - beginningMV - netFlows) / beginningMV
+    const monthlyTWRs: number[] = [];
     accountRecords.forEach(record => {
-      if (record.netTWR) {
-        cumulativeTWR *= (1 + record.netTWR);
+      const netFlows = record.inflows - record.outflows;
+      if (record.beginningMarketValue > 0) {
+        const monthlyTWR = (record.endingMarketValue - record.beginningMarketValue - netFlows) / record.beginningMarketValue;
+        monthlyTWRs.push(monthlyTWR);
       }
     });
-    cumulativeTWR = (cumulativeTWR - 1) * 100; // Convert to percentage
+    
+    // Calculate cumulative TWR by chain-linking monthly returns
+    // cumulativeTWR = product(1 + monthlyTWR) - 1
+    let cumulativeTWRFactor = 1;
+    monthlyTWRs.forEach(twr => {
+      cumulativeTWRFactor *= (1 + twr);
+    });
+    const cumulativeTWR = (cumulativeTWRFactor - 1) * 100; // Convert to percentage
     
     // Calculate annualized TWR using 365 days
     const startDate = new Date(inceptionRecord.startDate);
     const endDate = new Date(latestRecord.endDate);
     const daysOfHistory = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const years = daysOfHistory / 365;
-    const annualizedTWR = (Math.pow(1 + cumulativeTWR / 100, 1 / years) - 1) * 100;
+    const annualizedTWR = (Math.pow(cumulativeTWRFactor, 1 / years) - 1) * 100;
     
     // Sum up flows and income
     const totalInflows = accountRecords.reduce((sum, r) => sum + r.inflows, 0);
@@ -171,8 +181,8 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
         totalDividends,
         totalNetGain,
         daysOfHistory,
-        cumulativeTWRFormula: `Product of (1 + Net TWR) across ${accountRecords.length} periods - 1`,
-        annualizedTWRFormula: `((1 + ${(cumulativeTWR/100).toFixed(4)})^(1/${years.toFixed(4)}) - 1) × 100 = ${annualizedTWR.toFixed(2)}%`,
+        cumulativeTWRFormula: `Chain-linked monthly TWR: ∏(1 + (endingMV - beginningMV - netFlows)/beginningMV) across ${accountRecords.length} periods - 1`,
+        annualizedTWRFormula: `(${cumulativeTWRFactor.toFixed(6)})^(1/${years.toFixed(4)}) - 1) × 100 = ${annualizedTWR.toFixed(2)}%`,
       },
     });
   });
@@ -181,59 +191,66 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
 }
 
 export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] {
-  const yearlyMap = new Map<number, { 
-    beginningValue: number;
-    endingValue: number;
-    netFlows: number;
-    twrProduct: number;
-  }>();
-  
   // Sort records by date first
   const sortedRecords = [...records].sort((a, b) => 
     new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
   );
   
+  const yearlyMap = new Map<number, { 
+    firstRecord: PerformanceRecord;
+    lastRecord: PerformanceRecord;
+    monthlyRecords: PerformanceRecord[];
+  }>();
+  
+  // Group records by year
   sortedRecords.forEach(record => {
     const year = new Date(record.endDate).getFullYear();
     
     if (!yearlyMap.has(year)) {
       yearlyMap.set(year, { 
-        beginningValue: record.beginningMarketValue,
-        endingValue: record.endingMarketValue,
-        netFlows: 0,
-        twrProduct: 1
+        firstRecord: record,
+        lastRecord: record,
+        monthlyRecords: []
       });
     }
     
     const yearData = yearlyMap.get(year)!;
-    // Update ending value to the latest in the year
-    yearData.endingValue = record.endingMarketValue;
-    // Accumulate net flows
-    yearData.netFlows += (record.inflows - record.outflows);
-    
-    // Compound TWR
-    if (record.netTWR) {
-      yearData.twrProduct *= (1 + record.netTWR);
-    }
+    yearData.lastRecord = record; // Always update to latest
+    yearData.monthlyRecords.push(record);
   });
   
   const yearlyData: YearlyData[] = [];
-  let growthOf1 = 1;
+  let growthOf1 = 1; // Cumulative growth of $1 from inception
   
   Array.from(yearlyMap.keys()).sort().forEach(year => {
     const data = yearlyMap.get(year)!;
-    growthOf1 *= data.twrProduct;
     
-    // Market value change = (ending - beginning) - net flows
-    // This gives us the investment gain/loss excluding contributions/withdrawals
-    const marketValueChange = (data.endingValue - data.beginningValue) - data.netFlows;
+    // Calculate yearly TWR by chain-linking monthly TWRs
+    // yearlyTWR = product(1 + monthlyTWR) for all months in year
+    let yearTWRProduct = 1;
+    data.monthlyRecords.forEach(record => {
+      const netFlows = record.inflows - record.outflows;
+      if (record.beginningMarketValue > 0) {
+        const monthlyTWR = (record.endingMarketValue - record.beginningMarketValue - netFlows) / record.beginningMarketValue;
+        yearTWRProduct *= (1 + monthlyTWR);
+      }
+    });
+    
+    // Update cumulative growth of $1
+    growthOf1 *= yearTWRProduct;
+    
+    // Market Value Change: endingMV(last) - beginningMV(first)
+    const marketValueChange = data.lastRecord.endingMarketValue - data.firstRecord.beginningMarketValue;
+    
+    // Net Flows: sum(inflows - outflows) for the year
+    const netFlows = data.monthlyRecords.reduce((sum, r) => sum + (r.inflows - r.outflows), 0);
     
     yearlyData.push({
       year,
       marketValueChange,
-      netFlows: data.netFlows,
+      netFlows,
       growthOf1,
-      endingValue: data.endingValue,
+      endingValue: data.lastRecord.endingMarketValue,
     });
   });
   
