@@ -48,10 +48,10 @@ export interface AccountSummary {
 
 export interface YearlyData {
   year: number;
-  marketValueChange: number;
-  netFlows: number;
-  growthOf1: number;
-  endingValue: number;
+  annualReturn: number; // percentage
+  growthOf1: number; // cumulative growth of $1 from inception
+  portfolioValue: number; // ending MV for the year
+  dollarGainLoss: number; // (mvEnd - mvStart) - netFlows
 }
 
 export function parseCSVData(csvText: string): PerformanceRecord[] {
@@ -222,30 +222,31 @@ export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] 
   Array.from(yearlyMap.keys()).sort().forEach(year => {
     const data = yearlyMap.get(year)!;
     
-    // Calculate yearly growth using Net TWR values directly from CSV
-    // growthOf1Year = product(1 + netTWR) for all months in year
-    let growthOf1Year = 1;
+    // Annual Return: product(1 + Net TWR for all rows in year y) - 1
+    let annualReturnFactor = 1;
     data.monthlyRecords.forEach(record => {
-      growthOf1Year *= (1 + record.netTWR);
+      annualReturnFactor *= (1 + record.netTWR);
     });
+    const annualReturn = (annualReturnFactor - 1) * 100; // Convert to percentage
     
     // Update cumulative growth of $1 from inception
-    growthOf1 *= growthOf1Year;
+    growthOf1 *= annualReturnFactor;
     
-    // Market Value Change: endingMV(last row of year) - beginningMV(first row of year)
+    // Portfolio Value: Ending MV of last row in year
+    const portfolioValue = data.lastRecord.endingMarketValue;
+    
+    // Dollar Gain/Loss: (mvEnd - mvStart) - netFlows
     const mvStart = data.firstRecord.beginningMarketValue;
     const mvEnd = data.lastRecord.endingMarketValue;
-    const marketValueChange = mvEnd - mvStart;
-    
-    // Net Flows: sum(inflows - outflows) for the year
     const netFlows = data.monthlyRecords.reduce((sum, r) => sum + (r.inflows - r.outflows), 0);
+    const dollarGainLoss = (mvEnd - mvStart) - netFlows;
     
     yearlyData.push({
       year,
-      marketValueChange,
-      netFlows,
-      growthOf1, // This is the growth factor (not minus 1), should never be negative
-      endingValue: mvEnd,
+      annualReturn,
+      growthOf1,
+      portfolioValue,
+      dollarGainLoss,
     });
   });
   

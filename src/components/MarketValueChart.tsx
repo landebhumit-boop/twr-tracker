@@ -9,7 +9,7 @@ interface MarketValueChartProps {
 export function MarketValueChart({ data }: MarketValueChartProps) {
   const chartData = data.map(d => ({
     year: d.year,
-    change: d.marketValueChange,
+    change: d.dollarGainLoss,
   }));
 
   return (
