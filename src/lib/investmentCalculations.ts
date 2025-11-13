@@ -32,6 +32,18 @@ export interface AccountSummary {
   totalDividends: number;
   totalNetGain: number;
   initialInvestment: number;
+  // Calculation breakdown for auditing
+  calculationDetails?: {
+    inceptionMV: number;
+    latestMV: number;
+    totalInflows: number;
+    totalOutflows: number;
+    totalDividends: number;
+    totalNetGain: number;
+    daysOfHistory: number;
+    cumulativeTWRFormula: string;
+    annualizedTWRFormula: string;
+  };
 }
 
 export interface YearlyData {
@@ -122,10 +134,11 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
     });
     cumulativeTWR = (cumulativeTWR - 1) * 100; // Convert to percentage
     
-    // Calculate annualized TWR
+    // Calculate annualized TWR using 365 days
     const startDate = new Date(inceptionRecord.startDate);
     const endDate = new Date(latestRecord.endDate);
-    const years = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+    const daysOfHistory = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const years = daysOfHistory / 365;
     const annualizedTWR = (Math.pow(1 + cumulativeTWR / 100, 1 / years) - 1) * 100;
     
     // Sum up flows and income
@@ -150,6 +163,17 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
       totalDividends,
       totalNetGain,
       initialInvestment: inceptionRecord.beginningMarketValue > 0 ? inceptionRecord.beginningMarketValue : inceptionRecord.inflows,
+      calculationDetails: {
+        inceptionMV: inceptionRecord.beginningMarketValue,
+        latestMV: latestRecord.endingMarketValue,
+        totalInflows,
+        totalOutflows,
+        totalDividends,
+        totalNetGain,
+        daysOfHistory,
+        cumulativeTWRFormula: `Product of (1 + Net TWR) across ${accountRecords.length} periods - 1`,
+        annualizedTWRFormula: `((1 + ${(cumulativeTWR/100).toFixed(4)})^(1/${years.toFixed(4)}) - 1) × 100 = ${annualizedTWR.toFixed(2)}%`,
+      },
     });
   });
   
