@@ -41,8 +41,8 @@ export function PerformanceTable({ data, title, description }: PerformanceTableP
                       <TooltipContent className="max-w-xs">
                         <div className="text-xs space-y-1">
                           <div className="font-semibold">Growth of $1:</div>
-                          <div>Value of a $1 investment compounded through the year</div>
-                          <div className="text-muted-foreground">Ending value: ${row.endingValue.toFixed(2)}</div>
+                          <div>Value of $1 invested from inception through {row.year}</div>
+                          <div className="text-muted-foreground">= ∏(1 + netTWR) for all months from inception to end of {row.year}</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
@@ -61,7 +61,7 @@ export function PerformanceTable({ data, title, description }: PerformanceTableP
                       <TooltipContent className="max-w-xs">
                         <div className="text-xs space-y-1">
                           <div className="font-semibold">Market Value Change:</div>
-                          <div>Year-end MV - Year-start MV</div>
+                          <div>Ending MV (last row) - Beginning MV (first row) of {row.year}</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
