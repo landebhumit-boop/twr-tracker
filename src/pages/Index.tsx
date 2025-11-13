@@ -8,6 +8,7 @@ import { MarketValueChart } from "@/components/MarketValueChart";
 import { PerformanceTable } from "@/components/PerformanceTable";
 import { TradeActivityCard } from "@/components/TradeActivityCard";
 import { AnalysisSection } from "@/components/AnalysisSection";
+import { AnalysisMethodology } from "@/components/AnalysisMethodology";
 import { AccountPerformanceOverview } from "@/components/AccountPerformanceOverview";
 import { UnrealizedGainsPlaceholder } from "@/components/UnrealizedGainsPlaceholder";
 import { AssetAllocationPlaceholder } from "@/components/AssetAllocationPlaceholder";
@@ -214,7 +215,9 @@ const Index = () => {
               avgHistory={dataQuality.avgHistory}
               maxHistory={dataQuality.maxHistory}
               minHistory={dataQuality.minHistory}
+              accountSummaries={accountSummaries}
             />
+            <AnalysisMethodology />
           </TabsContent>
         </Tabs>
       </div>
