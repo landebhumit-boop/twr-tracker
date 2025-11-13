@@ -40,7 +40,9 @@ export function AccountPerformanceOverview({ accounts }: AccountPerformanceOverv
               </TableRow>
             </TableHeader>
             <TableBody>
-              {accounts.map((account) => (
+              {accounts.map((account) => {
+                const calc = account.calculationDetails;
+                return (
                 <TableRow key={account.accountNumber}>
                   <TableCell className="font-medium">{account.accountNumber}</TableCell>
                   <TableCell>
@@ -71,39 +73,133 @@ export function AccountPerformanceOverview({ accounts }: AccountPerformanceOverv
                     )}
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    ${account.currentMarketValue.toLocaleString()}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                            ${account.currentMarketValue.toLocaleString()}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <div className="text-xs space-y-1">
+                            <div className="font-semibold">Market Value Calculation:</div>
+                            <div>Latest Ending MV: ${calc?.latestMV.toLocaleString()}</div>
+                            <div className="text-muted-foreground">From period ending {account.latestDate}</div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    <div className={`flex items-center justify-end gap-1 ${
-                      account.cumulativeTWR >= 0 ? 'text-success' : 'text-destructive'
-                    }`}>
-                      {account.cumulativeTWR >= 0 ? (
-                        <TrendingUp className="h-3 w-3" />
-                      ) : (
-                        <TrendingDown className="h-3 w-3" />
-                      )}
-                      {account.cumulativeTWR.toFixed(2)}%
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className={`flex items-center justify-end gap-1 cursor-help border-b border-dotted border-muted-foreground/50 ${
+                            account.cumulativeTWR >= 0 ? 'text-success' : 'text-destructive'
+                          }`}>
+                            {account.cumulativeTWR >= 0 ? (
+                              <TrendingUp className="h-3 w-3" />
+                            ) : (
+                              <TrendingDown className="h-3 w-3" />
+                            )}
+                            {account.cumulativeTWR.toFixed(2)}%
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <div className="text-xs space-y-1">
+                            <div className="font-semibold">Cumulative TWR Calculation:</div>
+                            <div>{calc?.cumulativeTWRFormula}</div>
+                            <div className="mt-2 text-muted-foreground">Period: {account.inceptionDate} to {account.latestDate}</div>
+                            <div className="text-muted-foreground">{account.totalRecords} periods</div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </TableCell>
                   <TableCell className={`text-right font-mono ${
                     account.annualizedTWR >= 0 ? 'text-success' : 'text-destructive'
                   }`}>
-                    {account.annualizedTWR.toFixed(2)}%
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                            {account.annualizedTWR.toFixed(2)}%
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-sm">
+                          <div className="text-xs space-y-1">
+                            <div className="font-semibold">Annualized TWR Calculation:</div>
+                            <div className="font-mono">{calc?.annualizedTWRFormula}</div>
+                            <div className="mt-2 text-muted-foreground">
+                              Days: {calc?.daysOfHistory} ({(calc?.daysOfHistory || 0 / 365).toFixed(2)} years using 365-day year)
+                            </div>
+                            <div className="text-muted-foreground">Cumulative TWR: {account.cumulativeTWR.toFixed(2)}%</div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </TableCell>
                   <TableCell className={`text-right font-mono ${
                     account.totalNetGain >= 0 ? 'text-success' : 'text-destructive'
                   }`}>
-                    ${account.totalNetGain.toLocaleString()}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                            ${account.totalNetGain.toLocaleString()}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <div className="text-xs space-y-1">
+                            <div className="font-semibold">Net Gain Calculation:</div>
+                            <div>Sum of Net Gain across all {account.totalRecords} periods</div>
+                            <div className="mt-2 text-muted-foreground">Total: ${calc?.totalNetGain.toLocaleString()}</div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    ${account.totalDividends.toLocaleString()}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                            ${account.totalDividends.toLocaleString()}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <div className="text-xs space-y-1">
+                            <div className="font-semibold">Dividends Calculation:</div>
+                            <div>Sum of Dividends & Interest across all {account.totalRecords} periods</div>
+                            <div className="mt-2 text-muted-foreground">Total: ${calc?.totalDividends.toLocaleString()}</div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </TableCell>
-                  <TableCell className="text-right">{account.yearsOfHistory.toFixed(1)}</TableCell>
+                  <TableCell className="text-right">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                            {account.yearsOfHistory.toFixed(1)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <div className="text-xs space-y-1">
+                            <div className="font-semibold">Years Calculation:</div>
+                            <div>{calc?.daysOfHistory} days ÷ 365 = {account.yearsOfHistory.toFixed(4)} years</div>
+                            <div className="mt-2 text-muted-foreground">Using 365-day year</div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {new Date(account.inceptionDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} - {new Date(account.latestDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                   </TableCell>
                 </TableRow>
-              ))}
+              )})}
             </TableBody>
           </Table>
         </div>
