@@ -125,7 +125,7 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
     // Calculate annualized TWR
     const startDate = new Date(inceptionRecord.startDate);
     const endDate = new Date(latestRecord.endDate);
-    const years = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    const years = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
     const annualizedTWR = (Math.pow(1 + cumulativeTWR / 100, 1 / years) - 1) * 100;
     
     // Sum up flows and income
