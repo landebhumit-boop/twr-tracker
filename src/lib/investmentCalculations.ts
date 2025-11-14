@@ -140,14 +140,16 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
     monthlyReturns.forEach(monthlyReturn => {
       cumulativeTWRFactor *= (1 + monthlyReturn);
     });
-    const cumulativeTWR = (cumulativeTWRFactor - 1) * 100; // Convert to percentage
+    const cumulativeTWRDecimal = cumulativeTWRFactor - 1; // Keep as decimal
+    const cumulativeTWR = cumulativeTWRDecimal * 100; // Also store as percentage for display
     
-    // Calculate annualized TWR using exact days / 365
+    // Calculate annualized TWR: (1 + cumulativeTWR)^(1/years) - 1
     const firstDate = new Date(inceptionRecord.endDate);
     const lastDate = new Date(latestRecord.endDate);
-    const daysOfHistory = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
-    const years = daysOfHistory / 365;
-    const annualizedTWR = years > 0 ? (Math.pow(1 + cumulativeTWR / 100, 1 / years) - 1) * 100 : cumulativeTWR;
+    const days = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
+    const years = days / 365;
+    const annualizedTWRDecimal = years > 0 ? Math.pow(1 + cumulativeTWRDecimal, 1 / years) - 1 : cumulativeTWRDecimal;
+    const annualizedTWR = annualizedTWRDecimal * 100; // Convert to percentage
     
     // Sum up flows and income
     const totalInflows = accountRecords.reduce((sum, r) => sum + r.inflows, 0);
@@ -178,9 +180,9 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
         totalOutflows,
         totalDividends,
         totalNetGain,
-        daysOfHistory,
-        cumulativeTWRFormula: `Chain-linked Net TWR from CSV: ∏(1 + netTWR) across ${accountRecords.length} periods - 1 = ${cumulativeTWRFactor.toFixed(6)} - 1`,
-        annualizedTWRFormula: `(1 + ${(cumulativeTWR / 100).toFixed(6)})^(1/${years.toFixed(4)}) - 1) × 100 = ${annualizedTWR.toFixed(2)}%`,
+        daysOfHistory: days,
+        cumulativeTWRFormula: `Chain-linked Net TWR from CSV: ∏(1 + netTWR) across ${accountRecords.length} periods - 1 = ${cumulativeTWRFactor.toFixed(6)} - 1 = ${cumulativeTWRDecimal.toFixed(6)}`,
+        annualizedTWRFormula: `((1 + ${cumulativeTWRDecimal.toFixed(4)})^(1/${years.toFixed(4)}) - 1) × 100 = ${annualizedTWR.toFixed(2)}%`,
       },
     });
   });
