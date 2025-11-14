@@ -113,7 +113,7 @@ export function AnalysisSection({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="text-3xl font-bold text-primary cursor-help border-b border-dotted border-primary/50 inline-block">
-                    {avgHistory.toFixed(2)} years
+                    {Math.round(avgHistory * 100) / 100} years
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-sm">
