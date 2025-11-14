@@ -1,8 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 export function AnalysisMethodology() {
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <CardTitle>Analysis Methodology</CardTitle>
         <p className="text-sm text-muted-foreground">How the data was analyzed to answer these questions</p>
@@ -11,7 +9,7 @@ export function AnalysisMethodology() {
         <div>
           <h3 className="font-semibold text-sm mb-2">Account Status Determination:</h3>
           <p className="text-sm text-muted-foreground">
-            Accounts are classified as "closed" if the latest ending market value equals zero, regardless of whether there are inflows. This includes accounts that may be getting funded but have not yet been activated. All other accounts are considered "active".
+            Accounts are classified as "closed" if the latest ending market value equals zero. This excludes accounts that may be getting funded but have not yet been activated by inspecting the inflow section. accounts are considered "active" have data until March 31st, 2023. If the account does not have the most recent data available or an ending MV with ), its classified as a "held away".                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
           </p>
         </div>
 
@@ -50,6 +48,5 @@ export function AnalysisMethodology() {
           </p>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
