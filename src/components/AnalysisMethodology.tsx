@@ -11,7 +11,7 @@ export function AnalysisMethodology() {
         <div>
           <h3 className="font-semibold text-sm mb-2">Account Status Determination:</h3>
           <p className="text-sm text-muted-foreground">
-            Accounts are classified as "closed" if the latest ending market value equals zero. All other accounts are considered "active" regardless of recent activity.
+            Accounts are classified as "closed" if the latest ending market value equals zero, regardless of whether there are inflows. This includes accounts that may be getting funded but have not yet been activated. All other accounts are considered "active".
           </p>
         </div>
 
