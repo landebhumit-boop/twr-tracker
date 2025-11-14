@@ -130,21 +130,21 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
       !isNaN(r.netIRR) && !isNaN(r.grossIRR) && r.netIRR !== r.grossIRR
     );
     
-    // Calculate cumulative TWR (compound the returns)
-    let cumulativeTWR = 1;
+    // Calculate cumulative TWR (compound the returns) - keep as growth factor for precision
+    let cumulativeTWRFactor = 1;
     accountRecords.forEach(record => {
       if (record.netTWR) {
-        cumulativeTWR *= (1 + record.netTWR);
+        cumulativeTWRFactor *= (1 + record.netTWR);
       }
     });
-    cumulativeTWR = (cumulativeTWR - 1) * 100; // Convert to percentage
     
-    // Calculate annualized TWR using 365 days
+    // Calculate annualized TWR using 365 days - use growth factor directly for precision
     const startDate = new Date(inceptionRecord.startDate);
     const endDate = new Date(latestRecord.endDate);
     const daysOfHistory = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
     const years = daysOfHistory / 365;
-    const annualizedTWR = (Math.pow(1 + cumulativeTWR / 100, 1 / years) - 1) * 100;
+    const annualizedTWR = (Math.pow(cumulativeTWRFactor, 1 / years) - 1) * 100;
+    const cumulativeTWR = (cumulativeTWRFactor - 1) * 100; // Convert to % only for storage
     
     // Sum up flows and income
     const totalInflows = accountRecords.reduce((sum, r) => sum + r.inflows, 0);
