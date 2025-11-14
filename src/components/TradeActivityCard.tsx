@@ -26,7 +26,7 @@ export function TradeActivityCard({ period, inflows, outflows, netGain, dividend
           <div>
             <div className="text-sm text-muted-foreground mb-1">Outflows</div>
             <div className="text-xl font-bold text-destructive">
-              -${outflows.toLocaleString()}
+              ${outflows.toLocaleString()}
             </div>
           </div>
           <div>
