@@ -21,8 +21,8 @@ export function PerformanceTable({ data, title, description }: PerformanceTableP
           <TableHeader>
             <TableRow>
               <TableHead>Year</TableHead>
-              <TableHead className="text-right">Growth of $1</TableHead>
-              <TableHead className="text-right">Market Value Change</TableHead>
+              <TableHead className="text-right">Ending Market Value</TableHead>
+              <TableHead className="text-right">TWR Return</TableHead>
               <TableHead className="text-right">Net Flows</TableHead>
             </TableRow>
           </TableHeader>
@@ -35,34 +35,32 @@ export function PerformanceTable({ data, title, description }: PerformanceTableP
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-help border-b border-dotted border-muted-foreground/50">
-                          ${row.growthOf1.toFixed(4)}
+                          ${row.endingMarketValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
                         <div className="text-xs space-y-1">
-                          <div className="font-semibold">Growth of $1 (Year):</div>
-                          <div>Product of (1 + monthly returns) for this year</div>
-                          <div className="text-muted-foreground">Cumulative: ${row.growthOf1Cumulative.toFixed(4)}</div>
+                          <div className="font-semibold">Ending Market Value:</div>
+                          <div>Total market value at the end of the year</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </TableCell>
                 <TableCell className={`text-right font-mono ${
-                  row.marketValueChange >= 0 ? 'text-success' : 'text-destructive'
+                  row.twrReturn >= 0 ? 'text-success' : 'text-destructive'
                 }`}>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-help border-b border-dotted border-muted-foreground/50">
-                          ${row.marketValueChange.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          {(row.twrReturn * 100).toFixed(2)}%
                         </span>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
                         <div className="text-xs space-y-1">
-                          <div className="font-semibold">Market Value Change:</div>
-                          <div>mvEnd - mvStart (end-of-year MV minus start-of-year MV)</div>
-                          <div className="text-muted-foreground">Does not adjust for net flows</div>
+                          <div className="font-semibold">Time-Weighted Return:</div>
+                          <div>Annualized return for the year, showing investment performance independent of cash flows</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>

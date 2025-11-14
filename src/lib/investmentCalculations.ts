@@ -48,11 +48,12 @@ export interface AccountSummary {
 
 export interface YearlyData {
   year: number;
-  marketValueChange: number;
+  endingMarketValue: number; // Market value at end of year
+  twrReturn: number; // TWR return for the year (as decimal, e.g., 0.05 = 5%)
   netFlows: number;
-  growthOf1: number; // Yearly growth factor (product of 1 + returns for this year)
-  growthOf1Cumulative: number; // Cumulative growth since inception
-  endingValue: number;
+  growthOf1: number; // Yearly growth factor (product of 1 + returns for this year) - for backward compatibility
+  growthOf1Cumulative: number; // Cumulative growth since inception - for backward compatibility
+  marketValueChange: number; // For backward compatibility
 }
 
 export function parseCSVData(csvText: string): PerformanceRecord[] {
@@ -230,11 +231,12 @@ export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] 
     
     yearlyData.push({
       year,
-      marketValueChange,
+      endingMarketValue: data.endingValue,
+      twrReturn: data.twrProduct - 1, // Convert growth factor to return (e.g., 1.05 -> 0.05)
       netFlows: data.netFlows,
       growthOf1: data.twrProduct, // Yearly growth factor (never negative)
       growthOf1Cumulative: cumulativeGrowthOf1, // Cumulative since inception
-      endingValue: data.endingValue,
+      marketValueChange,
     });
   });
   
