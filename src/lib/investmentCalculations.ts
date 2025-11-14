@@ -177,7 +177,7 @@ export function calculateAccountSummary(records: PerformanceRecord[]): AccountSu
         totalNetGain,
         daysOfHistory,
         cumulativeTWRFormula: `Product of (1 + Net TWR) across ${accountRecords.length} periods - 1`,
-        annualizedTWRFormula: `((1 + ${(cumulativeTWR/100).toFixed(4)})^(1/${years.toFixed(4)}) - 1) × 100 = ${annualizedTWR.toFixed(2)}%`,
+        annualizedTWRFormula: `(${cumulativeTWRFactor.toFixed(6)}^(1/${years.toFixed(4)}) - 1) × 100 = ${annualizedTWR.toFixed(2)}%`,
       },
     });
   });
