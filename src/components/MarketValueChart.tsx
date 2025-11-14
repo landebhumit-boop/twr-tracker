@@ -8,25 +8,23 @@ interface MarketValueChartProps {
 
 export function MarketValueChart({ data }: MarketValueChartProps) {
   const chartData = data.map(d => {
-    // Portfolio performance = market value change - net flows
-    const portfolioPerformance = d.marketValueChange - d.netFlows;
     const netFlows = d.netFlows;
+    const portfolioReturn = d.marketValueChange - netFlows; // Ending MV - Beginning MV - Net Flows
     
-    // For stacking: separate positive and negative components
     return {
       year: d.year,
-      inflowsPositive: netFlows > 0 ? netFlows : 0,
-      performancePositive: portfolioPerformance > 0 ? portfolioPerformance : 0,
-      outflowsNegative: netFlows < 0 ? netFlows : 0,
-      performanceNegative: portfolioPerformance < 0 ? portfolioPerformance : 0,
+      netFlowsPositive: netFlows > 0 ? netFlows : 0,
+      netFlowsNegative: netFlows < 0 ? netFlows : 0,
+      portfolioReturnPositive: portfolioReturn > 0 ? portfolioReturn : 0,
+      portfolioReturnNegative: portfolioReturn < 0 ? portfolioReturn : 0,
     };
   });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Market Value Components by Year</CardTitle>
-        <CardDescription>Breakdown of inflows, outflows, and portfolio growth/loss</CardDescription>
+        <CardTitle>Market Value Changes by Year</CardTitle>
+        <CardDescription>Net flows and portfolio returns stacked to show total annual change</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
@@ -55,26 +53,26 @@ export function MarketValueChart({ data }: MarketValueChartProps) {
               iconType="rect"
             />
             <Bar 
-              dataKey="inflowsPositive" 
-              name="Inflows"
+              dataKey="netFlowsPositive" 
+              name="Net Flows (Positive)"
               stackId="a"
               fill="hsl(142 76% 36%)"
             />
             <Bar 
-              dataKey="performancePositive" 
-              name="Portfolio Returns"
+              dataKey="portfolioReturnPositive" 
+              name="Portfolio Return (Positive)"
               stackId="a"
               fill="hsl(221 83% 53%)"
             />
             <Bar 
-              dataKey="outflowsNegative" 
-              name="Outflows"
+              dataKey="netFlowsNegative" 
+              name="Net Flows (Negative)"
               stackId="a"
               fill="hsl(0 84% 60%)"
             />
             <Bar 
-              dataKey="performanceNegative" 
-              name="Portfolio Losses"
+              dataKey="portfolioReturnNegative" 
+              name="Portfolio Return (Negative)"
               stackId="a"
               fill="hsl(24 95% 53%)"
             />
