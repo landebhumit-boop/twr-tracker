@@ -13,9 +13,10 @@ export function MarketValueChart({ data }: MarketValueChartProps) {
     
     return {
       year: d.year,
-      inflows: d.netFlows > 0 ? d.netFlows : 0,
-      outflows: d.netFlows < 0 ? Math.abs(d.netFlows) : 0,
-      portfolioGrowth: portfolioGrowth,
+      Inflows: d.netFlows > 0 ? d.netFlows : 0,
+      Outflows: d.netFlows < 0 ? Math.abs(d.netFlows) : 0,
+      "Portfolio Growth": portfolioGrowth >= 0 ? portfolioGrowth : 0,
+      "Portfolio Loss": portfolioGrowth < 0 ? Math.abs(portfolioGrowth) : 0,
     };
   });
 
@@ -26,8 +27,8 @@ export function MarketValueChart({ data }: MarketValueChartProps) {
         <CardDescription>Breakdown of inflows, outflows, and portfolio growth/loss</CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={chartData}>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={chartData} barGap={2}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis 
               dataKey="year" 
@@ -52,23 +53,23 @@ export function MarketValueChart({ data }: MarketValueChartProps) {
               iconType="rect"
             />
             <Bar 
-              dataKey="inflows" 
-              name="Inflows"
-              stackId="a"
-              fill="hsl(var(--success))"
+              dataKey="Inflows" 
+              fill="hsl(142 76% 36%)"
               radius={[4, 4, 0, 0]}
             />
             <Bar 
-              dataKey="portfolioGrowth" 
-              name="Portfolio Growth/Loss"
-              stackId="a"
-              fill="hsl(var(--primary))"
+              dataKey="Outflows" 
+              fill="hsl(0 84% 60%)"
+              radius={[4, 4, 0, 0]}
             />
             <Bar 
-              dataKey="outflows" 
-              name="Outflows"
-              stackId="b"
-              fill="hsl(var(--destructive))"
+              dataKey="Portfolio Growth" 
+              fill="hsl(221 83% 53%)"
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar 
+              dataKey="Portfolio Loss" 
+              fill="hsl(24 95% 53%)"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
