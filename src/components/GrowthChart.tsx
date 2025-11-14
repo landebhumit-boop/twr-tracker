@@ -9,7 +9,7 @@ interface GrowthChartProps {
 export function GrowthChart({ data }: GrowthChartProps) {
   const chartData = data.map(d => ({
     year: d.year,
-    value: d.growthOf1,
+    value: d.growthOf1Cumulative,
   }));
 
   return (
