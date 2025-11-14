@@ -8,15 +8,17 @@ interface MarketValueChartProps {
 
 export function MarketValueChart({ data }: MarketValueChartProps) {
   const chartData = data.map(d => {
-    // Portfolio growth = market value change - net flows
-    const portfolioGrowth = d.marketValueChange - d.netFlows;
+    // Portfolio performance = market value change - net flows
+    const portfolioPerformance = d.marketValueChange - d.netFlows;
+    const netFlows = d.netFlows;
     
+    // For stacking: separate positive and negative components
     return {
       year: d.year,
-      Inflows: d.netFlows > 0 ? d.netFlows : 0,
-      Outflows: d.netFlows < 0 ? Math.abs(d.netFlows) : 0,
-      "Portfolio Growth": portfolioGrowth >= 0 ? portfolioGrowth : 0,
-      "Portfolio Loss": portfolioGrowth < 0 ? Math.abs(portfolioGrowth) : 0,
+      inflowsPositive: netFlows > 0 ? netFlows : 0,
+      performancePositive: portfolioPerformance > 0 ? portfolioPerformance : 0,
+      outflowsNegative: netFlows < 0 ? netFlows : 0,
+      performanceNegative: portfolioPerformance < 0 ? portfolioPerformance : 0,
     };
   });
 
@@ -28,7 +30,7 @@ export function MarketValueChart({ data }: MarketValueChartProps) {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={chartData} barGap={2}>
+          <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis 
               dataKey="year" 
@@ -53,24 +55,28 @@ export function MarketValueChart({ data }: MarketValueChartProps) {
               iconType="rect"
             />
             <Bar 
-              dataKey="Inflows" 
+              dataKey="inflowsPositive" 
+              name="Inflows"
+              stackId="a"
               fill="hsl(142 76% 36%)"
-              radius={[4, 4, 0, 0]}
             />
             <Bar 
-              dataKey="Outflows" 
-              fill="hsl(0 84% 60%)"
-              radius={[4, 4, 0, 0]}
-            />
-            <Bar 
-              dataKey="Portfolio Growth" 
+              dataKey="performancePositive" 
+              name="Portfolio Returns"
+              stackId="a"
               fill="hsl(221 83% 53%)"
-              radius={[4, 4, 0, 0]}
             />
             <Bar 
-              dataKey="Portfolio Loss" 
+              dataKey="outflowsNegative" 
+              name="Outflows"
+              stackId="a"
+              fill="hsl(0 84% 60%)"
+            />
+            <Bar 
+              dataKey="performanceNegative" 
+              name="Portfolio Losses"
+              stackId="a"
               fill="hsl(24 95% 53%)"
-              radius={[4, 4, 0, 0]}
             />
           </BarChart>
         </ResponsiveContainer>
