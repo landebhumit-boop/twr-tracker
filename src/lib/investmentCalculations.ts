@@ -54,6 +54,9 @@ export interface YearlyData {
   growthOf1: number; // Yearly growth factor (product of 1 + returns for this year) - for backward compatibility
   growthOf1Cumulative: number; // Cumulative growth since inception - for backward compatibility
   marketValueChange: number; // For backward compatibility
+  beginningMarketValue: number; // For audit trail
+  inflows: number; // For audit trail
+  outflows: number; // For audit trail
 }
 
 export function parseCSVData(csvText: string): PerformanceRecord[] {
@@ -188,6 +191,8 @@ export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] 
     endingValue: number;
     netFlows: number;
     twrProduct: number;
+    inflows: number;
+    outflows: number;
   }>();
   
   // Sort records by date first
@@ -203,15 +208,19 @@ export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] 
         beginningValue: record.beginningMarketValue,
         endingValue: record.endingMarketValue,
         netFlows: 0,
-        twrProduct: 1
+        twrProduct: 1,
+        inflows: 0,
+        outflows: 0
       });
     }
     
     const yearData = yearlyMap.get(year)!;
     // Update ending value to the latest in the year
     yearData.endingValue = record.endingMarketValue;
-    // Accumulate net flows
+    // Accumulate net flows and individual components
     yearData.netFlows += (record.inflows - record.outflows);
+    yearData.inflows += record.inflows;
+    yearData.outflows += record.outflows;
     
     // Compound TWR
     if (record.netTWR) {
@@ -237,6 +246,9 @@ export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] 
       growthOf1: data.twrProduct, // Yearly growth factor (never negative)
       growthOf1Cumulative: cumulativeGrowthOf1, // Cumulative since inception
       marketValueChange,
+      beginningMarketValue: data.beginningValue,
+      inflows: data.inflows,
+      outflows: data.outflows,
     });
   });
   
