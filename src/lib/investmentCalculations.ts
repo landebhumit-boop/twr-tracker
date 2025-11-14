@@ -275,6 +275,7 @@ export function analyzeDataQuality(records: PerformanceRecord[]) {
   
   const activeAccounts = accountSummaries.filter(a => a.status === 'active').length;
   const closedAccounts = accountSummaries.filter(a => a.status === 'closed').length;
+  const heldAwayAccounts = accountSummaries.filter(a => a.status === 'held-away').length;
   
   const historyLengths = accountSummaries.map(a => a.yearsOfHistory);
   const avgHistory = historyLengths.reduce((sum, h) => sum + h, 0) / historyLengths.length;
@@ -290,6 +291,7 @@ export function analyzeDataQuality(records: PerformanceRecord[]) {
     totalAccounts: accounts.size,
     activeAccounts,
     closedAccounts,
+    heldAwayAccounts,
     avgHistory,
     maxHistory,
     minHistory,

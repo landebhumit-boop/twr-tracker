@@ -241,6 +241,7 @@ const Index = () => {
               totalAccounts={dataQuality.totalAccounts}
               activeAccounts={dataQuality.activeAccounts}
               closedAccounts={dataQuality.closedAccounts}
+              heldAwayAccounts={dataQuality.heldAwayAccounts}
               avgHistory={dataQuality.avgHistory}
               maxHistory={dataQuality.maxHistory}
               minHistory={dataQuality.minHistory}

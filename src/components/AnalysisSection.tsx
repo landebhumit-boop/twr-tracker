@@ -7,6 +7,7 @@ interface AnalysisSectionProps {
   totalAccounts: number;
   activeAccounts: number;
   closedAccounts: number;
+  heldAwayAccounts: number;
   avgHistory: number;
   maxHistory: number;
   minHistory: number;
@@ -16,7 +17,8 @@ interface AnalysisSectionProps {
 export function AnalysisSection({ 
   totalAccounts, 
   activeAccounts, 
-  closedAccounts, 
+  closedAccounts,
+  heldAwayAccounts,
   avgHistory, 
   maxHistory, 
   minHistory,
@@ -25,6 +27,7 @@ export function AnalysisSection({
   // Get account details for average calculation
   const activeAccountsList = accountSummaries.filter(a => a.status === 'active');
   const closedAccountsList = accountSummaries.filter(a => a.status === 'closed');
+  const heldAwayAccountsList = accountSummaries.filter(a => a.status === 'held-away');
   const minHistoryAccount = accountSummaries.find(a => a.yearsOfHistory === minHistory);
   const maxHistoryAccount = accountSummaries.find(a => a.yearsOfHistory === maxHistory);
   return (
@@ -36,7 +39,7 @@ export function AnalysisSection({
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -97,6 +100,38 @@ export function AnalysisSection({
             </TooltipProvider>
             <p className="text-xs text-muted-foreground mt-1">
               {((closedAccounts / totalAccounts) * 100).toFixed(1)}% of total accounts
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Held Away Accounts
+            </CardTitle>
+            <Users className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-3xl font-bold text-primary cursor-help border-b border-dotted border-primary/50 inline-block">
+                    {heldAwayAccounts}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <div className="text-xs space-y-1">
+                    <div className="font-semibold">Held Away Accounts:</div>
+                    <div>Accounts managed elsewhere or not directly controlled</div>
+                    <div className="mt-2 text-muted-foreground">
+                      {heldAwayAccountsList.length > 0 ? `Accounts: ${heldAwayAccountsList.map(a => a.accountNumber).join(', ')}` : 'No held away accounts'}
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <p className="text-xs text-muted-foreground mt-1">
+              {((heldAwayAccounts / totalAccounts) * 100).toFixed(1)}% of total accounts
             </p>
           </CardContent>
         </Card>
