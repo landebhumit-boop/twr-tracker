@@ -21,36 +21,15 @@ export function PerformanceTable({ data, title, description }: PerformanceTableP
           <TableHeader>
             <TableRow>
               <TableHead>Year</TableHead>
-              <TableHead className="text-right">Annual Return</TableHead>
               <TableHead className="text-right">Growth of $1</TableHead>
-              <TableHead className="text-right">Portfolio Value</TableHead>
-              <TableHead className="text-right">Gain/Loss ($)</TableHead>
+              <TableHead className="text-right">Market Value Change</TableHead>
+              <TableHead className="text-right">Net Flows</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((row) => (
               <TableRow key={row.year}>
                 <TableCell className="font-medium">{row.year}</TableCell>
-                <TableCell className={`text-right font-mono ${
-                  row.annualReturn >= 0 ? 'text-success' : 'text-destructive'
-                }`}>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="cursor-help border-b border-dotted border-muted-foreground/50">
-                          {row.annualReturn.toFixed(2)}%
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        <div className="text-xs space-y-1">
-                          <div className="font-semibold">Annual Return:</div>
-                          <div>Time-weighted return for {row.year}</div>
-                          <div className="text-muted-foreground">= ∏(1 + Net TWR for all months in {row.year}) - 1</div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </TableCell>
                 <TableCell className="text-right font-mono">
                   <TooltipProvider>
                     <Tooltip>
@@ -62,45 +41,46 @@ export function PerformanceTable({ data, title, description }: PerformanceTableP
                       <TooltipContent className="max-w-xs">
                         <div className="text-xs space-y-1">
                           <div className="font-semibold">Growth of $1:</div>
-                          <div>Cumulative growth of $1 invested from inception through {row.year}</div>
-                          <div className="text-muted-foreground">Rolling forward year by year using annual returns</div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </TableCell>
-                <TableCell className="text-right font-mono">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="cursor-help border-b border-dotted border-muted-foreground/50">
-                          ${row.portfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        <div className="text-xs space-y-1">
-                          <div className="font-semibold">Portfolio Value:</div>
-                          <div>Ending market value at end of {row.year}</div>
+                          <div>Value of a $1 investment compounded through the year</div>
+                          <div className="text-muted-foreground">Ending value: ${row.endingValue.toFixed(2)}</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </TableCell>
                 <TableCell className={`text-right font-mono ${
-                  row.dollarGainLoss >= 0 ? 'text-success' : 'text-destructive'
+                  row.marketValueChange >= 0 ? 'text-success' : 'text-destructive'
                 }`}>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-help border-b border-dotted border-muted-foreground/50">
-                          ${row.dollarGainLoss.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          ${row.marketValueChange.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
                         <div className="text-xs space-y-1">
-                          <div className="font-semibold">Gain/Loss ($):</div>
-                          <div>Performance dollars isolated from flows</div>
-                          <div className="text-muted-foreground">= (Ending MV - Beginning MV) - Net Flows</div>
+                          <div className="font-semibold">Market Value Change:</div>
+                          <div>Year-end MV - Year-start MV</div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableCell>
+                <TableCell className={`text-right font-mono ${
+                  row.netFlows >= 0 ? 'text-success' : 'text-destructive'
+                }`}>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help border-b border-dotted border-muted-foreground/50">
+                          ${row.netFlows.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <div className="text-xs space-y-1">
+                          <div className="font-semibold">Net Flows:</div>
+                          <div>Inflows - Outflows for the year</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
