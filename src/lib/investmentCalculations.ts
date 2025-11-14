@@ -50,7 +50,8 @@ export interface YearlyData {
   year: number;
   marketValueChange: number;
   netFlows: number;
-  growthOf1: number;
+  growthOf1: number; // Yearly growth factor (product of 1 + returns for this year)
+  growthOf1Cumulative: number; // Cumulative growth since inception
   endingValue: number;
 }
 
@@ -218,21 +219,21 @@ export function calculateYearlyData(records: PerformanceRecord[]): YearlyData[] 
   });
   
   const yearlyData: YearlyData[] = [];
-  let growthOf1 = 1;
+  let cumulativeGrowthOf1 = 1;
   
   Array.from(yearlyMap.keys()).sort().forEach(year => {
     const data = yearlyMap.get(year)!;
-    growthOf1 *= data.twrProduct;
+    cumulativeGrowthOf1 *= data.twrProduct;
     
-    // Market value change = (ending - beginning) - net flows
-    // This gives us the investment gain/loss excluding contributions/withdrawals
-    const marketValueChange = (data.endingValue - data.beginningValue) - data.netFlows;
+    // Market value change = mvEnd_y - mvStart_y (end-of-year MV minus start-of-year MV)
+    const marketValueChange = data.endingValue - data.beginningValue;
     
     yearlyData.push({
       year,
       marketValueChange,
       netFlows: data.netFlows,
-      growthOf1,
+      growthOf1: data.twrProduct, // Yearly growth factor (never negative)
+      growthOf1Cumulative: cumulativeGrowthOf1, // Cumulative since inception
       endingValue: data.endingValue,
     });
   });

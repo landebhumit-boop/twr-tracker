@@ -40,9 +40,9 @@ export function PerformanceTable({ data, title, description }: PerformanceTableP
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
                         <div className="text-xs space-y-1">
-                          <div className="font-semibold">Growth of $1:</div>
-                          <div>Value of a $1 investment compounded through the year</div>
-                          <div className="text-muted-foreground">Ending value: ${row.endingValue.toFixed(2)}</div>
+                          <div className="font-semibold">Growth of $1 (Year):</div>
+                          <div>Product of (1 + monthly returns) for this year</div>
+                          <div className="text-muted-foreground">Cumulative: ${row.growthOf1Cumulative.toFixed(4)}</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
@@ -61,7 +61,8 @@ export function PerformanceTable({ data, title, description }: PerformanceTableP
                       <TooltipContent className="max-w-xs">
                         <div className="text-xs space-y-1">
                           <div className="font-semibold">Market Value Change:</div>
-                          <div>Year-end MV - Year-start MV</div>
+                          <div>mvEnd - mvStart (end-of-year MV minus start-of-year MV)</div>
+                          <div className="text-muted-foreground">Does not adjust for net flows</div>
                         </div>
                       </TooltipContent>
                     </Tooltip>
